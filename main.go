@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -16,6 +17,17 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
+
+type data struct {
+	App interface{} `json:"app"`
+	Cpu interface{} `json:"cpu"`
+	Mem interface{} `json:"mem"`
+}
+
+type scale struct {
+	Data   []data `json:"data"`
+	Commit string `json:"commit"`
+}
 
 // Retrieve a token, saves the token, then returns the generated client.
 func getClient(config *oauth2.Config) *http.Client {
@@ -101,10 +113,48 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
-	tem := []string{"app", "1", "asafd"}
-	fmt.Println(tem)
 
-	fmt.Println(resp.Values)
+	name := []string{"app", "cpu", "mem"}
+	var datas []data
+	m := make(map[string]interface{})
+	var datamap []map[string]interface{}
+
+	for i := 0; i < len(resp.Values); i++ {
+		for j := 0; j < len(resp.Values[i]); j++ {
+			m[name[j]] = resp.Values[i][j]
+		}
+		datamap = append(datamap, m)
+	}
+	for _, v := range datamap {
+		temp := data{
+			App: v["app"],
+			Cpu: v["cpu"],
+			Mem: v["mem"],
+		}
+		datas = append(datas, temp)
+	}
+	aeiou := scale{
+		Data:   datas,
+		Commit: "scale up",
+	}
+	u, _ := json.Marshal(aeiou)
+	fmt.Println(string(u))
+
+	url := "http://localhost:8080"
+
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(u))
+	if err != nil {
+		fmt.Println(err)
+	}
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	c := &http.Client{}
+	response, err := c.Do(request)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer response.Body.Close()
+
 	t := time.Now().Format(time.RFC3339)
 	eventsListCall := srv.Events.List("c_ul2f5s0g93ib5efh11r23c7ink@group.calendar.google.com").ShowDeleted(false).
 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime")
