@@ -1,11 +1,14 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type data struct {
-	App interface{} `json:"app"`
-	Cpu interface{} `json:"cpu"`
-	Mem interface{} `json:"mem"`
+	App string `json:"app"`
+	Cpu string `json:"cpu"`
+	Mem string `json:"mem"`
 }
 
 type scale struct {
@@ -14,23 +17,13 @@ type scale struct {
 }
 
 func spreadsheet2json(sheetdata [][]interface{}) []byte {
-	title := []string{"app", "cpu", "mem"}
 	var allData []data
-	m := make(map[string]interface{})
-	var datamap []map[string]interface{}
 
 	for i := 0; i < len(sheetdata); i++ {
-		for j := 0; j < len(sheetdata[i]); j++ {
-			m[title[j]] = sheetdata[i][j]
-		}
-		datamap = append(datamap, m)
-	}
-
-	for _, v := range datamap {
 		temp := data{
-			App: v["app"],
-			Cpu: v["cpu"],
-			Mem: v["mem"],
+			App: fmt.Sprintf("%v", sheetdata[i][0]),
+			Cpu: fmt.Sprintf("%v", sheetdata[i][1]),
+			Mem: fmt.Sprintf("%v", sheetdata[i][2]),
 		}
 		allData = append(allData, temp)
 	}

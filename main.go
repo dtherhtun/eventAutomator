@@ -20,9 +20,8 @@ func main() {
 
 	calendarId := "c_ul2f5s0g93ib5efh11r23c7ink@group.calendar.google.com"
 
-	sheetData := fetchData(ctx, client, spreadsheetId, readRange)
-
-	url := "http://localhost:8000"
+	//url := "http://localhost:8000"
+	url := "http://rundeck-staging.upstra-next.ekomedia.technology:8080/api/41/webhook/KixguWigHzred0sCWf5SdVDCSi3pdI21#ParseJSon"
 
 	c := NewClient(url)
 
@@ -43,6 +42,7 @@ func main() {
 			if item.Summary == "[ASC] TESTING" && start.Equal(now) {
 				time.Sleep(5 * time.Second)
 				fmt.Println(item.Summary, " Event is Starting...........")
+				sheetData := fetchData(ctx, client, spreadsheetId, readRange)
 				req, err := http.NewRequest(http.MethodPost, c.BaseURL, bytes.NewBuffer(spreadsheet2json(sheetData)))
 
 				if err != nil {

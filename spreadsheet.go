@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -19,6 +20,8 @@ func fetchData(ctx context.Context, client *http.Client, spreadsheetId, readRang
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
+
+	fmt.Println(resp.Values)
 
 	return resp.Values
 }
