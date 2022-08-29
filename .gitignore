@@ -1,0 +1,6 @@
+# Crash log files
+.DS_Store
+
+# credential
+credentials.json
+token.json
