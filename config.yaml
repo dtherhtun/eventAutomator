@@ -1,0 +1,9 @@
+# config.yaml
+---
+credential: "credentials.json"
+target: "http://localhost:8000"
+spreadsheet:
+  id: "1jheKrlqGnfQ6kx5lfB2hm6aYo4atM8GCrWn5D1jt9u0"
+  readrange: "A2:E"
+calendar:
+  id: "c_ul2f5s0g93ib5efh11r23c7ink@group.calendar.google.com"
