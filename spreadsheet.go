@@ -25,3 +25,18 @@ func fetchData(ctx context.Context, client *http.Client, spreadsheetId, readRang
 
 	return resp.Values
 }
+
+func (cfg *Config) getScaleData(ctx context.Context, client *http.Client, nats bool, commit, cluster string) []byte {
+	rr := fmt.Sprintf("%s!%s", cluster, cfg.SpreadSheet.ReadRange)
+
+	sheetData := fetchData(ctx, client, cfg.SpreadSheet.Id, rr)
+
+	data := spreadSheet2Data(sheetData)
+
+	scaleData, err := toJson(data, nats, commit)
+	if err != nil {
+		log.Fatalf("Unable to get Json data: %v", err)
+	}
+
+	return scaleData
+}

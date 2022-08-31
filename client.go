@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
 
 type Client struct {
-	BaseURL string
-	//apiKey     string
+	BaseURL    string
+	apiKey     string
 	HTTPClient *http.Client
 }
 
@@ -19,15 +22,15 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
-type successResponse struct {
-	Code int         `json:"code"`
-	Data interface{} `json:"data"`
+type RundeckResponse struct {
+	JobId       string `json:"jobId"`
+	ExecutionId string `json:"executionId"`
 }
 
-func NewClient(BaseURLV1 string) *Client {
+func NewClient(BaseURLV1, apiKey string) *Client {
 	return &Client{
 		BaseURL: BaseURLV1,
-		//apiKey:  apiKey,
+		apiKey:  apiKey,
 		HTTPClient: &http.Client{
 			Timeout: time.Minute,
 		},
@@ -37,7 +40,7 @@ func NewClient(BaseURLV1 string) *Client {
 func (c *Client) sendRequest(req *http.Request) error {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json; charset=utf-8")
-	//req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
+	req.Header.Set("Authorization", c.apiKey)
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -55,5 +58,22 @@ func (c *Client) sendRequest(req *http.Request) error {
 		return fmt.Errorf("unknown error, status code: %d", res.StatusCode)
 	}
 
+	body, _ := ioutil.ReadAll(res.Body)
+	var response RundeckResponse
+	if err = json.Unmarshal(body, &response); err != nil {
+		return err
+	}
+	fmt.Println("JobID -> ", response.JobId, " executionId -> ", response.ExecutionId)
+
 	return nil
+}
+
+func postRequest(url string, data []byte) *http.Request {
+	reqBody := bytes.NewBuffer(data)
+	req, err := http.NewRequest(http.MethodPost, url, reqBody)
+	if err != nil {
+		log.Fatalf("Unable to make request: %v", err)
+	}
+
+	return req
 }

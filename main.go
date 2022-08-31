@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 )
 
 func main() {
@@ -15,6 +13,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	cfg, err := NewConfig(cfgPath)
 	if err != nil {
 		log.Fatal(err)
@@ -22,28 +21,13 @@ func main() {
 
 	client := oauthClient(ctx, cfg.Credentail)
 
-	/*spreadsheetId := "1jheKrlqGnfQ6kx5lfB2hm6aYo4atM8GCrWn5D1jt9u0"
-	readRange := "c1up!A2:E"
+	c := NewClient(cfg.Target.URL, cfg.Target.ApiKey)
 
-	calendarId := "c_ul2f5s0g93ib5efh11r23c7ink@group.calendar.google.com"
+	scaleData := cfg.getScaleData(ctx, client, false, "scale up", "c1up")
 
-	url := "http://localhost:8000"*/
-	//url := "http://rundeck-staging.upstra-next.ekomedia.technology:8080/api/41/webhook/KixguWigHzred0sCWf5SdVDCSi3pdI21#ParseJSon"
+	req := postRequest(c.BaseURL, scaleData)
 
-	c := NewClient(cfg.Target)
-
-	rr := fmt.Sprintf("%s!%s", "c1up", cfg.SpreadSheet.ReadRange)
-
-	fmt.Println("Upcoming events:")
-	sheetData := fetchData(ctx, client, cfg.SpreadSheet.Id, rr)
-
-	data := spreadSheet2Data(sheetData)
-
-	scaleData, _ := toJson(data, true, "scaleup")
-	req, _ := http.NewRequest(http.MethodPost, c.BaseURL, bytes.NewBuffer(scaleData))
-	abc := req.WithContext(ctx)
-
-	if err := c.sendRequest(abc); err != nil {
+	if err := c.sendRequest(req); err != nil {
 		log.Fatalf("Unable to send request: %v", err)
 	}
 

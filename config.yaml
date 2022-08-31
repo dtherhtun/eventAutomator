@@ -1,7 +1,9 @@
 # config.yaml
 ---
 credential: "credentials.json"
-target: "http://localhost:8000"
+target: 
+  url: "http://rundeck-staging.upstra-next.ekomedia.technology:8080/api/41/webhook/T4AUvRkurNpEhg1YEo4pwcg3CoNvVacn#ParseJsonWithAuth"
+  apikey: "kcPNgRUJyENDDosj0ElqaYanojYZmEQy"
 spreadsheet:
   id: "1jheKrlqGnfQ6kx5lfB2hm6aYo4atM8GCrWn5D1jt9u0"
   readrange: "A2:E"

@@ -17,7 +17,10 @@ type Config struct {
 	Calendar struct {
 		Id string `yaml:"id"`
 	} `yaml:"calendar"`
-	Target string `yaml:"target"`
+	Target struct {
+		URL    string `yaml:"url"`
+		ApiKey string `yaml:"apikey"`
+	} `yaml:"target"`
 }
 
 func NewConfig(configPath string) (*Config, error) {
