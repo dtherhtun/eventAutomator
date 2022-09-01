@@ -13,12 +13,12 @@ import (
 func fetchData(ctx context.Context, client *http.Client, spreadsheetId, readRange string) [][]interface{} {
 	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+		log.Printf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		log.Printf("Unable to retrieve data from sheet: %v", err)
 	}
 
 	fmt.Println(resp.Values)
@@ -35,7 +35,7 @@ func (cfg *Config) getScaleData(ctx context.Context, client *http.Client, nats b
 
 	scaleData, err := toJson(data, nats, commit)
 	if err != nil {
-		log.Fatalf("Unable to get Json data: %v", err)
+		log.Printf("Unable to get Json data: %v", err)
 	}
 
 	return scaleData

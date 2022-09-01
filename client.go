@@ -32,12 +32,13 @@ func NewClient(BaseURLV1, apiKey string) *Client {
 		BaseURL: BaseURLV1,
 		apiKey:  apiKey,
 		HTTPClient: &http.Client{
-			Timeout: time.Minute,
+			Timeout: 2 * time.Second,
 		},
 	}
 }
 
 func (c *Client) sendRequest(req *http.Request) error {
+	req.Header = make(http.Header)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.Header.Set("Authorization", c.apiKey)
@@ -72,7 +73,7 @@ func postRequest(url string, data []byte) *http.Request {
 	reqBody := bytes.NewBuffer(data)
 	req, err := http.NewRequest(http.MethodPost, url, reqBody)
 	if err != nil {
-		log.Fatalf("Unable to make request: %v", err)
+		log.Printf("Unable to make request: %v", err)
 	}
 
 	return req

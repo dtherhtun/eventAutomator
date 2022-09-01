@@ -4,9 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 func main() {
+	var nats bool = false
+	p := bluemonday.StrictPolicy()
+	p.AddSpaceWhenStrippingTag(false)
+
 	ctx := context.Background()
 
 	cfgPath, err := ParseFlags()
@@ -19,32 +26,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client := oauthClient(ctx, cfg.Credentail)
+	clientGoogle := oauthClient(ctx, cfg.Credentail)
 
-	c := NewClient(cfg.Target.URL, cfg.Target.ApiKey)
+	clientTarget := NewClient(cfg.Target.URL, cfg.Target.ApiKey)
 
-	scaleData := cfg.getScaleData(ctx, client, false, "scale up", "c1up")
+	chkevent := eventList(ctx, clientGoogle, cfg.Calendar.Id)
 
-	req := postRequest(c.BaseURL, scaleData)
-
-	if err := c.sendRequest(req); err != nil {
-		log.Fatalf("Unable to send request: %v", err)
-	}
-
-	chkevent := eventList(ctx, client, cfg.Calendar.Id)
-
-	events, _ := chkevent.Do()
-
-	for _, item := range events.Items {
-		if item.Description == "c1" {
-			fmt.Println(item.Description)
-		}
-	}
-
-	/*for {
+	for {
 		events, err := chkevent.Do()
 		if err != nil {
-			log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
+			log.Printf("Unable to retrieve the events: %v", err)
 		}
 		for _, item := range events.Items {
 
@@ -54,18 +45,57 @@ func main() {
 			if item.Summary == "[ASC] TESTING" && start.Equal(now) {
 				time.Sleep(5 * time.Second)
 				fmt.Println(item.Summary, " Event is Starting...........")
-				sheetData := fetchData(ctx, client, spreadsheetId, readRange)
-				req, err := http.NewRequest(http.MethodPost, c.BaseURL, bytes.NewBuffer(spreadsheet2json(sheetData)))
+				description := p.Sanitize(item.Description)
+				commit := fmt.Sprintf("%s-%s", item.Summary, description)
+				p.Sanitize(item.Description)
 
-				if err != nil {
-					fmt.Println("newreq err", err)
-				}
-				abc := req.WithContext(ctx)
+				switch description {
+				case "c1up", "c1down", "c2up", "c2down":
+					if description == "c2up" {
+						nats = true
+					}
+					fmt.Println("nats->", nats)
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, description)
+					req := postRequest(clientTarget.BaseURL, scaleData)
 
-				if err := c.sendRequest(abc); err != nil {
-					fmt.Println("sendreq err", err)
+					if err := clientTarget.sendRequest(req); err != nil {
+						log.Printf("Unable to send request: %v", err)
+					}
+				case "multiClusterUp":
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1up")
+					req := postRequest(clientTarget.BaseURL, scaleData)
+
+					if err := clientTarget.sendRequest(req); err != nil {
+						log.Printf("Unable to send request: %v", err)
+					}
+					time.Sleep(10 * time.Second)
+					scaleData2 := cfg.getScaleData(ctx, clientGoogle, true, commit, "c2up")
+					req2 := postRequest(clientTarget.BaseURL, scaleData2)
+
+					if err := clientTarget.sendRequest(req2); err != nil {
+						log.Printf("Unable to send request: %v", err)
+					}
+				case "multiClusterDown", "multiClusterDownWithoutNats":
+					if description == "multiClusterDownWithoutNats" {
+						nats = true
+					}
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1down")
+					req := postRequest(clientTarget.BaseURL, scaleData)
+
+					if err := clientTarget.sendRequest(req); err != nil {
+						log.Printf("Unable to send request: %v", err)
+					}
+					time.Sleep(5 * time.Second)
+					scaleData2 := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c2down")
+					req2 := postRequest(clientTarget.BaseURL, scaleData2)
+
+					if err := clientTarget.sendRequest(req2); err != nil {
+						log.Printf("Unable to send request: %v", err)
+					}
+				default:
+					log.Printf("Wrong Event instruction: %s", description)
 				}
 			}
 		}
-	}*/
+	}
 }

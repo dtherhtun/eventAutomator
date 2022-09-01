@@ -40,7 +40,7 @@ func spreadSheet2Data(sheetdata [][]interface{}) []data {
 func string2Int(s string) int {
 	number, err := strconv.Atoi(s)
 	if err != nil {
-		log.Fatalf("Unable to parse string to int: %v", err)
+		log.Printf("Unable to parse string to int: %v", err)
 	}
 	return number
 }

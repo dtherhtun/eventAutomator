@@ -13,7 +13,7 @@ import (
 func eventList(ctx context.Context, client *http.Client, calendarId string) *calendar.EventsListCall {
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Calendar client: %v", err)
+		log.Printf("Unable to retrieve Calendar client: %v", err)
 	}
 
 	t := time.Now().Format(time.RFC3339)
