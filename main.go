@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -46,11 +47,12 @@ func main() {
 				time.Sleep(5 * time.Second)
 				fmt.Println(item.Summary, " Event is Starting...........")
 				description := p.Sanitize(item.Description)
+				description = strings.TrimSpace(description)
 				commit := fmt.Sprintf("%s-%s", item.Summary, description)
 				p.Sanitize(item.Description)
 
 				switch description {
-				case "c1up", "c1down", "c2up", "c2down":
+				case "c1Up", "c1Down", "c2Up", "c2Down":
 					if description == "c2up" {
 						nats = true
 					}
@@ -62,14 +64,14 @@ func main() {
 						log.Printf("Unable to send request: %v", err)
 					}
 				case "multiClusterUp":
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1up")
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Up")
 					req := postRequest(clientTarget.BaseURL, scaleData)
 
 					if err := clientTarget.sendRequest(req); err != nil {
 						log.Printf("Unable to send request: %v", err)
 					}
 					time.Sleep(10 * time.Second)
-					scaleData2 := cfg.getScaleData(ctx, clientGoogle, true, commit, "c2up")
+					scaleData2 := cfg.getScaleData(ctx, clientGoogle, true, commit, "c2Up")
 					req2 := postRequest(clientTarget.BaseURL, scaleData2)
 
 					if err := clientTarget.sendRequest(req2); err != nil {
@@ -79,14 +81,14 @@ func main() {
 					if description == "multiClusterDownWithoutNats" {
 						nats = true
 					}
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1down")
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Down")
 					req := postRequest(clientTarget.BaseURL, scaleData)
 
 					if err := clientTarget.sendRequest(req); err != nil {
 						log.Printf("Unable to send request: %v", err)
 					}
 					time.Sleep(5 * time.Second)
-					scaleData2 := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c2down")
+					scaleData2 := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c2Down")
 					req2 := postRequest(clientTarget.BaseURL, scaleData2)
 
 					if err := clientTarget.sendRequest(req2); err != nil {
