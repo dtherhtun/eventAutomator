@@ -45,7 +45,7 @@ func main() {
 
 			if item.Summary == "[ASC] TESTING" && start.Equal(now) {
 				time.Sleep(5 * time.Second)
-				fmt.Println(item.Summary, " Event is Starting...........")
+				log.Println(item.Summary, " Event is Starting...........")
 				description := p.Sanitize(item.Description)
 				description = strings.TrimSpace(description)
 				commit := fmt.Sprintf("%s-%s", item.Summary, description)
@@ -56,7 +56,7 @@ func main() {
 					if description == "c2up" {
 						nats = true
 					}
-					fmt.Println("nats->", nats)
+					log.Println("nats->", nats)
 					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, description)
 					req := postRequest(clientTarget.BaseURL, scaleData)
 

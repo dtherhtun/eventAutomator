@@ -45,6 +45,7 @@ func (c *Client) sendRequest(req *http.Request) error {
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -64,7 +65,7 @@ func (c *Client) sendRequest(req *http.Request) error {
 	if err = json.Unmarshal(body, &response); err != nil {
 		return err
 	}
-	fmt.Println("JobID -> ", response.JobId, " executionId -> ", response.ExecutionId)
+	log.Println("JobID -> ", response.JobId, " executionId -> ", response.ExecutionId)
 
 	return nil
 }
