@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
@@ -27,11 +28,21 @@ func fetchData(ctx context.Context, client *http.Client, spreadsheetId, readRang
 }
 
 func (cfg *Config) getScaleData(ctx context.Context, client *http.Client, nats bool, commit, cluster string) []byte {
-	rr := fmt.Sprintf("%s!%s", cluster, cfg.SpreadSheet.ReadRange)
+	var allSheetData [][]interface{}
+	var sheets []string
+	clusters := strings.Split(cluster, ",")
 
-	sheetData := fetchData(ctx, client, cfg.SpreadSheet.Id, rr)
+	for _, sheet := range clusters {
+		rr := fmt.Sprintf("%s!%s", sheet, cfg.SpreadSheet.ReadRange)
+		sheets = append(sheets, rr)
+	}
 
-	data := spreadSheet2Data(sheetData)
+	for _, rr := range sheets {
+		sheetData := fetchData(ctx, client, cfg.SpreadSheet.Id, rr)
+		allSheetData = append(allSheetData, sheetData...)
+	}
+
+	data := spreadSheet2Data(allSheetData)
 
 	scaleData, err := toJson(data, nats, commit)
 	if err != nil {
