@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	var nats bool = false
 	p := bluemonday.StrictPolicy()
 	p.AddSpaceWhenStrippingTag(false)
 
@@ -34,6 +33,7 @@ func main() {
 	chkevent := eventList(ctx, clientGoogle, cfg.Calendar.Id)
 
 	for {
+		var nats bool = false
 		events, err := chkevent.Do()
 		if err != nil {
 			log.Printf("Unable to retrieve the events: %v", err)
@@ -53,7 +53,7 @@ func main() {
 
 				switch description {
 				case "c1Up", "c1Down", "c2Up", "c2Down":
-					if description == "c2up" {
+					if description == "c2Up" {
 						nats = true
 					}
 					log.Println("nats->", nats)
@@ -64,34 +64,21 @@ func main() {
 						log.Printf("Unable to send request: %v", err)
 					}
 				case "multiClusterUp":
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Up")
+					nats = true
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Up,c2Up")
 					req := postRequest(clientTarget.BaseURL, scaleData)
 
 					if err := clientTarget.sendRequest(req); err != nil {
-						log.Printf("Unable to send request: %v", err)
-					}
-					time.Sleep(10 * time.Second)
-					scaleData2 := cfg.getScaleData(ctx, clientGoogle, true, commit, "c2Up")
-					req2 := postRequest(clientTarget.BaseURL, scaleData2)
-
-					if err := clientTarget.sendRequest(req2); err != nil {
 						log.Printf("Unable to send request: %v", err)
 					}
 				case "multiClusterDown", "multiClusterDownWithoutNats":
 					if description == "multiClusterDownWithoutNats" {
 						nats = true
 					}
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Down")
+
+					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Down,c2Down")
 					req := postRequest(clientTarget.BaseURL, scaleData)
-
 					if err := clientTarget.sendRequest(req); err != nil {
-						log.Printf("Unable to send request: %v", err)
-					}
-					time.Sleep(5 * time.Second)
-					scaleData2 := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c2Down")
-					req2 := postRequest(clientTarget.BaseURL, scaleData2)
-
-					if err := clientTarget.sendRequest(req2); err != nil {
 						log.Printf("Unable to send request: %v", err)
 					}
 				default:
