@@ -22,8 +22,6 @@ func fetchData(ctx context.Context, client *http.Client, spreadsheetId, readRang
 		log.Printf("Unable to retrieve data from sheet: %v", err)
 	}
 
-	fmt.Println(resp.Values)
-
 	return resp.Values
 }
 

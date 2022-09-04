@@ -18,8 +18,7 @@ type Client struct {
 }
 
 type errorResponse struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Err string `json:"err"`
 }
 
 type RundeckResponse struct {
@@ -38,14 +37,12 @@ func NewClient(BaseURLV1, apiKey string) *Client {
 }
 
 func (c *Client) sendRequest(req *http.Request) error {
-	req.Header = make(http.Header)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.Header.Set("Authorization", c.apiKey)
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -54,7 +51,7 @@ func (c *Client) sendRequest(req *http.Request) error {
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse
 		if err = json.NewDecoder(res.Body).Decode(&errRes); err == nil {
-			return errors.New(errRes.Message)
+			return errors.New(errRes.Err)
 		}
 
 		return fmt.Errorf("unknown error, status code: %d", res.StatusCode)
@@ -70,9 +67,9 @@ func (c *Client) sendRequest(req *http.Request) error {
 	return nil
 }
 
-func postRequest(url string, data []byte) *http.Request {
+func (c *Config) postRequest(data []byte) *http.Request {
 	reqBody := bytes.NewBuffer(data)
-	req, err := http.NewRequest(http.MethodPost, url, reqBody)
+	req, err := http.NewRequest(http.MethodPost, c.Target.URL, reqBody)
 	if err != nil {
 		log.Printf("Unable to make request: %v", err)
 	}

@@ -58,7 +58,7 @@ func main() {
 					}
 					log.Println("nats->", nats)
 					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, description)
-					req := postRequest(clientTarget.BaseURL, scaleData)
+					req := cfg.postRequest(scaleData)
 
 					if err := clientTarget.sendRequest(req); err != nil {
 						log.Printf("Unable to send request: %v", err)
@@ -66,7 +66,7 @@ func main() {
 				case "multiClusterUp":
 					nats = true
 					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Up,c2Up")
-					req := postRequest(clientTarget.BaseURL, scaleData)
+					req := cfg.postRequest(scaleData)
 
 					if err := clientTarget.sendRequest(req); err != nil {
 						log.Printf("Unable to send request: %v", err)
@@ -77,7 +77,7 @@ func main() {
 					}
 
 					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Down,c2Down")
-					req := postRequest(clientTarget.BaseURL, scaleData)
+					req := cfg.postRequest(scaleData)
 					if err := clientTarget.sendRequest(req); err != nil {
 						log.Printf("Unable to send request: %v", err)
 					}
