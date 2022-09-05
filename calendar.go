@@ -10,10 +10,10 @@ import (
 	"google.golang.org/api/option"
 )
 
-func eventList(ctx context.Context, client *http.Client, calendarId string) *calendar.EventsListCall {
+func eventList(ctx context.Context, logger *log.Logger, client *http.Client, calendarId string) *calendar.EventsListCall {
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Printf("Unable to retrieve Calendar client: %v", err)
+		logger.Printf("Unable to retrieve Calendar client: %v", err)
 	}
 
 	t := time.Now().Format(time.RFC3339)

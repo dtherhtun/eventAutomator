@@ -36,7 +36,7 @@ func NewClient(BaseURLV1, apiKey string) *Client {
 	}
 }
 
-func (c *Client) sendRequest(req *http.Request) error {
+func (c *Client) sendRequest(req *http.Request, logger *log.Logger) error {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.Header.Set("Authorization", c.apiKey)
@@ -62,16 +62,16 @@ func (c *Client) sendRequest(req *http.Request) error {
 	if err = json.Unmarshal(body, &response); err != nil {
 		return err
 	}
-	log.Println("JobID -> ", response.JobId, " executionId -> ", response.ExecutionId)
+	logger.Println("JobID -> ", response.JobId, " executionId -> ", response.ExecutionId)
 
 	return nil
 }
 
-func (c *Config) postRequest(data []byte) *http.Request {
+func (c *Config) postRequest(data []byte, logger *log.Logger) *http.Request {
 	reqBody := bytes.NewBuffer(data)
 	req, err := http.NewRequest(http.MethodPost, c.Target.URL, reqBody)
 	if err != nil {
-		log.Printf("Unable to make request: %v", err)
+		logger.Printf("Unable to make request: %v", err)
 	}
 
 	return req

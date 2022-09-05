@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	var f = os.Stdout
 	p := bluemonday.StrictPolicy()
 	p.AddSpaceWhenStrippingTag(false)
 
@@ -26,26 +28,37 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if cfg.LogFile != "" {
+		f, err = os.OpenFile(cfg.LogFile, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		defer f.Close()
+	}
+
+	logger := log.New(f, "", log.LstdFlags)
+
 	clientGoogle := oauthClient(ctx, cfg.Credentail)
 
 	clientTarget := NewClient(cfg.Target.URL, cfg.Target.ApiKey)
 
-	chkevent := eventList(ctx, clientGoogle, cfg.Calendar.Id)
+	chkevent := eventList(ctx, logger, clientGoogle, cfg.Calendar.Id)
 
 	for {
 		var nats bool = false
 		events, err := chkevent.Do()
 		if err != nil {
-			log.Printf("Unable to retrieve the events: %v", err)
+			logger.Printf("Unable to retrieve the events: %v", err)
 		}
 		for _, item := range events.Items {
 
 			start, _ := time.Parse(time.RFC3339, item.Start.DateTime)
 			now, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
-			if item.Summary == "[ASC] TESTING" && start.Equal(now) {
+			if item.Summary == cfg.Calendar.Event && start.Equal(now) {
 				time.Sleep(5 * time.Second)
-				log.Println(item.Summary, " Event is Starting...........")
+				logger.Println(item.Summary, " Event is Starting...........")
 				description := p.Sanitize(item.Description)
 				description = strings.TrimSpace(description)
 				commit := fmt.Sprintf("%s-%s", item.Summary, description)
@@ -56,33 +69,32 @@ func main() {
 					if description == "c2Up" {
 						nats = true
 					}
-					log.Println("nats->", nats)
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, description)
-					req := cfg.postRequest(scaleData)
+					scaleData := cfg.getScaleData(ctx, logger, clientGoogle, nats, commit, description)
+					req := cfg.postRequest(scaleData, logger)
 
-					if err := clientTarget.sendRequest(req); err != nil {
-						log.Printf("Unable to send request: %v", err)
+					if err := clientTarget.sendRequest(req, logger); err != nil {
+						logger.Printf("Unable to send request: %v", err)
 					}
 				case "multiClusterUp":
 					nats = true
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Up,c2Up")
-					req := cfg.postRequest(scaleData)
+					scaleData := cfg.getScaleData(ctx, logger, clientGoogle, nats, commit, "c1Up,c2Up")
+					req := cfg.postRequest(scaleData, logger)
 
-					if err := clientTarget.sendRequest(req); err != nil {
-						log.Printf("Unable to send request: %v", err)
+					if err := clientTarget.sendRequest(req, logger); err != nil {
+						logger.Printf("Unable to send request: %v", err)
 					}
 				case "multiClusterDown", "multiClusterDownWithoutNats":
 					if description == "multiClusterDownWithoutNats" {
 						nats = true
 					}
 
-					scaleData := cfg.getScaleData(ctx, clientGoogle, nats, commit, "c1Down,c2Down")
-					req := cfg.postRequest(scaleData)
-					if err := clientTarget.sendRequest(req); err != nil {
-						log.Printf("Unable to send request: %v", err)
+					scaleData := cfg.getScaleData(ctx, logger, clientGoogle, nats, commit, "c1Down,c2Down")
+					req := cfg.postRequest(scaleData, logger)
+					if err := clientTarget.sendRequest(req, logger); err != nil {
+						logger.Printf("Unable to send request: %v", err)
 					}
 				default:
-					log.Printf("Wrong Event instruction: %s", description)
+					logger.Printf("Wrong Event instruction: %s", description)
 				}
 			}
 		}

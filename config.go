@@ -10,12 +10,14 @@ import (
 
 type Config struct {
 	Credentail  string `yaml:"credential"`
+	LogFile     string `yaml:"logfile"`
 	SpreadSheet struct {
 		Id        string `yaml:"id"`
 		ReadRange string `yaml:"readrange"`
 	} `yaml:"spreadsheet"`
 	Calendar struct {
-		Id string `yaml:"id"`
+		Id    string `yaml:"id"`
+		Event string `yaml:"event"`
 	} `yaml:"calendar"`
 	Target struct {
 		URL    string `yaml:"url"`
