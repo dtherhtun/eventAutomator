@@ -1,6 +1,0 @@
-curl -X POST -H "Content-Type: application/json" -d'{"data":[{"app":"asc-admin-c1","cpu":"1","mem":"2Gi","min":1,"max":10},{"app":"asc-api-c1","cpu":"1","mem":"2Gi","min":5,"max":37}],"nats":true,"commit":"scaleup"}' http://rundeck-staging.upstra-next.ekomedia.technology:8080/api/41/webhook/KixguWigHzred0sCWf5SdVDCSi3pdI21#ParseJSon
-
-curl -X POST -H "Content-Type: application/json" -d'{"data":[{"app":"asc-admin-c2","cpu":"1","mem":"2Gi","min":1,"max":10},{"app":"asc-api-c2","cpu":"1","mem":"2Gi","min":1,"max":37}],"nats":true,"commit":"scaleDOWN"}' http://rundeck-staging.upstra-next.ekomedia.technology:8080/api/41/webhook/KixguWigHzred0sCWf5SdVDCSi3pdI21#ParseJSon
-
-
-curl -X POST -H "Authorization: kcPNgRUJyENDDosj0ElqaYanojYZmEQy" -H "Content-Type: application/json" -d'{"data":[{"app":"asc-admin-c1","cpu":"1","mem":"2Gi","min":2,"max":12},{"app":"asc-api-c1","cpu":"1","mem":"2Gi","min":6,"max":40}],"nats":true,"commit":"scaleup"}' http://rundeck-staging.upstra-next.ekomedia.technology:8080/api/41/webhook/T4AUvRkurNpEhg1YEo4pwcg3CoNvVacn#ParseJsonWithAuth
