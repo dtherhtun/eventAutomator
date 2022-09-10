@@ -29,6 +29,6 @@ calendar:
   event: "[SheetOps] Scaling K8s"
 ```
 
-## Exmaple Sheet
+## Sample Sheet
 
 ![alt](./.github/img/sheet-k8s.png)
